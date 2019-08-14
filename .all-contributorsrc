@@ -1,0 +1,13 @@
+{
+  "projectName": "learn-react-hooks",
+  "projectOwner": "berlin",
+  "repoType": "github",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [],
+  "contributorsPerLine": 7,
+  "repoHost": "https://github.com"
+}
