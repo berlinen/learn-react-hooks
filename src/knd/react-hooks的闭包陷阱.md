@@ -77,3 +77,26 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'))
 ```
+
+这里的代码想要实现的功能如下：
+
+1 点击 Start 开始执行 interval，并且一旦有可能就往 lapse 上加一
+
+2 点击 Stop 后取消 interval
+
+3 点击 Clear 会取消 interval，并且设置 lapse 为 0
+
+但是这个例子在实际执行过程中会出现一个问题，那就是在 interval 开启的情况下，直接执行 clear，会停止 interval，但是显示的 lapse 却不是 0，那么这是为什么呢？
+
+出现这样的情况主要原因是：useEffect 是异步的，也就是说我们执行 useEffect 中绑定的函数或者是解绑的函数，**都不是在一次 setState 产生的更新中被同步执行的。**啥意思呢？我们来模拟一下代码的执行顺序：
+
+在我们点击来 clear 之后，我们调用了 setLapse 和 setRunning，这两个方法是用来更新 state 的，所以他们会标记组件更新，然后通知 React 我们需要重新渲染来。
+
+然后 React 开始来重新渲染的流程，并很快执行到了 Stopwatch 组件。
+
+注意以上都是同步执行的过程，所以不会存在在这个过程中 setInterval 又触发的情况，所以在更新 Stopwatch 的时候，如果我们能同步得执行 useEffect 的解绑函数，那么就可以在这次 JavaScript 的调用栈中清除这个 interval，而不会出现这种情况。
+
+是恰恰因为 useEffect 是异步执行的，他要在 React 走完本次更新之后才会执行解绑以及重新绑定的函数。那么这就给 interval 再次触发的机会，这也就导致来，我们设置 lapse 为 0 之后，他又在 interval 中被更新成了一个计算后的值，之后才被真正的解绑。
+
+那么我们如何解决这个问题呢？
+
