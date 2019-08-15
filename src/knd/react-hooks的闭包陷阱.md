@@ -100,3 +100,14 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 那么我们如何解决这个问题呢？
 
+## 使用 useLayoutEffect
+
+useLayoutEffect 可以看作是 useEffect 的同步版本。使用 useLayoutEffect 就可以达到我们上面说的，在同一次更新流程中解绑 interval 的目的。
+
+那么同学们肯定要问了，既然 useLayoutEffect 可以避免这个问题，那么为什么还要用 useEffect 呢，直接所有地方都用 useLayoutEffect 不就好了。
+
+这个呢主要是因为 useLayoutEffect 是同步的，如果我们要在 useLayoutEffect 调用状态更新，或者执行一些非常耗时的计算，可能会导致 React 运行时间过长，阻塞了浏览器的渲染，导致一些卡顿的问题。这块呢我们有机会再单独写一篇文章来分析，这里就不再赘述。
+
+## 不使用 useLayoutEffect
+
+
