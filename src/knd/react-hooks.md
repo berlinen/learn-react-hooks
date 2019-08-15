@@ -128,6 +128,56 @@ function FiberNode(
 }
 ```
 
+在这里我们需要注意的是this.memoizedState，这个key就是用来存储在上次渲染过程中最终获得的节点的state的，每次执行render方法之前，React会计算出当前组件最新的state然后赋值给class的实例，再调用render。
+
+所以很多不是很清楚React原理的同学会对React的ClassComponent有误解，认为state和lifeCycle都是自己主动调用的，因为我们继承了React.Component，它里面肯定有很多相关逻辑。事实上如果有兴趣可以去看一下Component的源码，大概也就是100多行，非常简单。所以在React中，class仅仅是一个载体，让我们写组件的时候更容易理解一点，毕竟组件和class都是封闭性较强的
+
+## 原理
+
+在知道上面的基础之后，对于Hooks为什么能够保存无状态组件的原理就比较好理解了。
+
+我们假设有这么一段代码：
+
+```js
+function FunctionalComponent () {
+  const [state1, setState1] = useState(1)
+  const [state2, setState2] = useState(2)
+  const [state3, setState3] = useState(3)
+}
+```
+
+在我们执行functionalComponent的时候，在第一次执行到useState的时候，他会对应Fiber对象上的memoizedState，这个属性原来设计来是用来存储ClassComponent的state的，因为在ClassComponent中state是一整个对象，所以可以和memoizedState一一对应。
+
+但是在Hooks中，React并不知道我们调用了几次useState，所以在保存state这件事情上，React想出了一个比较有意思的方案，那就是调用useState后设置在memoizedState上的对象长这样：
+
+```javaScript
+{
+  baseState,
+  next,
+  baseUpdate,
+  queue,
+  memoizedState
+}
+```
+
+我们叫他Hook对象。这里面我们最需要关心的是memoizedState和next，memoizedState是用来记录这个useState应该返回的结果的，而next指向的是下一次useState对应的`Hook对象。
+
+也就是说：
+
+```js
+hook1 => Fiber.memoizedState
+state1 === hook1.memoizedState
+hook1.next => hook2
+state2 === hook2.memoizedState
+hook2.next => hook3
+state3 === hook3.memoizedState
+```
+
+每个在FunctionalComponent中调用的useState都会有一个对应的Hook对象，他们按照执行的顺序以类似链表的数据格式存放在Fiber.memoizedState上
+
+重点来了：就是因为是以这种方式进行state的存储，所以useState（包括其他的Hooks）都必须在FunctionalComponent的根作用域中声明，也就是不能在if或者循环中声明，比如
+
+
 
 
 
