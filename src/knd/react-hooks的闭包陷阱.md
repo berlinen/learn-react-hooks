@@ -110,4 +110,36 @@ useLayoutEffect 可以看作是 useEffect 的同步版本。使用 useLayoutEffe
 
 ## 不使用 useLayoutEffect
 
+当然我们不能因为 useLayoutEffect 非常方便得解决了问题所以就直接抛弃 useEffect，毕竟这是 React 更推荐的用法。那么我们该如何解决这个问题呢？
+
+在解决问题之前，我们需要弄清楚问题的根本。在这个问题上，我们之前已经分析过，就是因为在我们设置了 lapse 之后，因为 interval 的再次触发，但是又设置了一次 lapse。那么要解决这个问题，就可以通过避免最新的那次触发，或者在触发的时候判断如果没有 running，就不再设置。
+
+用 useLayoutEffect 显然属于第一种方法来解决问题，那么我们接下去来讲讲第二种方法。
+
+按照这种思路，我们第一个反应应该就是在 setInterval 的回调中加入判断：
+
+```js
+const intervalId = setInterval(() => {
+  if (running) {
+    setLapse(Date.now() - startTime)
+  }
+}, 0)
+```
+
+但是很遗憾，这样做是不行的，因为这个回调方法保存了他的闭包，而在他的闭包里面，running 永远都是true。那么我们是否可以通过在 useEffect 外部声明方法来逃过闭包呢？比如下面这样：
+
+```js
+function updateLapse(time) {
+  if (runing) {
+    setLapse(time)
+  }
+}
+
+React.useEffect(() => {
+  //...
+  setInterval(() => {
+    updateLapse(/* ... */)
+  })
+})
+```
 
