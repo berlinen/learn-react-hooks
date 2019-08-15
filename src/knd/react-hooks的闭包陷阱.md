@@ -267,3 +267,45 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'))
 ```
+
+在这里我们把 lapse 和 running 放在一起，变成了一个 state 对象，有点类似 Redux 的用法。在这里我们给 TICK action 上加了一个是否 running 的判断，以此来避开了在 running 被设置为 false 之后多余的 lapse 改变。
+
+那么这个实现跟我们使用 updateLapse 的方式有什么区别呢？最大的区别是我们的 state 不来自于闭包，在之前的代码中，我们在任何方法中获取 lapse 和 running 都是通过闭包，而在这里，state 是作为参数传入到 Reducer 中的，也就是不论何时我们调用了 dispatch，在 Reducer 中得到的 State 都是最新的，这就帮助我们避开了闭包的问题。
+
+其实我们也可以通过 useState 来实现，原理是一样的，我们可以通过把 lapse 和 running 放在一个对象中，然后使用
+
+```js
+updateState(newState) {
+  setState((state) => ({ ...state, newState }))
+}
+```
+
+这样的方式来更新状态。这里最重要的就是给 setState 传入的是回调，这个回调会接受最新的状态，所以不需要使用闭包中的状态来进行判断。具体的代码我这边就不为大家实现来，大家可以去试一下，最终的代码应该类似下面的（没有测试过）：
+
+```js
+const [state, dispatch] = React.useState(stateReducer, {
+  lapse: 0,
+  running: false,
+})
+
+function updateState(action) {
+  setState(state => {
+    switch (action.type) {
+      case TOGGLE:
+        return { ...state, running: !state.running }
+      case TICK:
+        if (state.running) {
+          return { ...state, lapse: action.lapse }
+        }
+        return state
+      case CLEAR:
+        return { running: false, lapse: 0 }
+      default:
+        return state
+    }
+  })
+}
+```
+
+## 总结
+
