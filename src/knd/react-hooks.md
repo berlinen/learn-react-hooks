@@ -191,6 +191,48 @@ for (something) {
 
 最主要的原因就是你不能确保这些条件语句每次执行的次数是一样的，也就是说如果第一次我们创建了state1 => hook1, state2 => hook2, state3 => hook3这样的对应关系之后，下一次执行因为something条件没达成，导致useState(1)没有执行，那么运行useState(2)的时候，拿到的hook对象是state1的，那么整个逻辑就乱套了，所以这个条件是必须要遵守的！
 
+## setState
+
+上面讲了Hooks中state是如何保存的，那么接下去来讲讲如何更新state
+
+我们调用的调用useState返回的方法是酱紫的：
+
+```js
+var dispatch = queue.dispatch = dispatchAction.bind(null, currentlyRenderingFiber$1, queue);
+return [workInProgressHook.memoizedState, dispatch];
+```
+
+调用这个方法会创建一个update
+
+```js
+var update = {
+  expirationTime: _expirationTime,
+  action: action,
+  callback: callback !== undefined ? callback : null,
+  next: null
+}
+```
+
+这里的action是我们调用setState1传入的值，而这个update会被加入到queue上，因为可能存在一次性调用多次setState1的清空（跟React的batchUpdate有关，以后有机会讲。）
+
+在收集完这所有update之后，会调度一次React的更新，在更新的过程中，肯定会执行到我们的FunctionalComponent，那么就会执行到对应的useState，然后我们就拿到了Hook对象，他保存了queue对象表示有哪些更新存在，然后依次进行更新，拿到最新的state保存在memoizedState上，并且返回，最终达到了setState的效果。
+
+## 总结
+
+其实本质上跟ClassComponent是差不多的，只不过因为useState拆分了单一对象state，所以要用一个相对独特的方式进行数据保存，而且会存在一定的规则限制。
+
+但是这些条件完全不能掩盖Hooks的光芒，他的意义是在是太大了，让React这个 函数式编程范式的框架终于摆脱了要用类来创建组件的尴尬场面。事实上类的存在意义确实不大，比如PuerComponent现在也有对应的React.memo来让函数组件也能达到相同的效果。
+
+最后，因为真的要把源码摊开来讲，就会涉及到一些其他的源码内容，比如workInProgress => current的转换，expirationTime涉及的调度等，反而会导致大家无法理解本篇文章的主体Hooks，所以我在写完完整源码解析后又总结归纳了这篇文章来单独发布。希望能帮助各位童鞋更好得理解Hooks，并能大胆用到实际开发中去。
+
+因为：真的很好用啊！！！
+
+## 注意
+
+目前react-hot-loader不能和hooks一起使用，详情，所以你可以考虑等到正式版再用
+
+
+
 
 
 
