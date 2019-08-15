@@ -95,7 +95,7 @@ module.exports =
 /*! ModuleConcatenation bailout: Module is not an ECMAScript module */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+
 
 module.exports = (str, count, opts) => {
 	// Support older versions: use the third parameter as options.indent
@@ -1659,7 +1659,7 @@ function coerce (version) {
 /*! ModuleConcatenation bailout: Cannot concat with external "process" (<- Module is not an ECMAScript module) */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
+
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/indent-string/index.js
