@@ -177,6 +177,20 @@ state3 === hook3.memoizedState
 
 重点来了：就是因为是以这种方式进行state的存储，所以useState（包括其他的Hooks）都必须在FunctionalComponent的根作用域中声明，也就是不能在if或者循环中声明，比如
 
+```js
+if (something) {
+  const [state1] = useState(1)
+}
+
+// or
+
+for (something) {
+  const [state2] = useState(2)
+}
+```
+
+最主要的原因就是你不能确保这些条件语句每次执行的次数是一样的，也就是说如果第一次我们创建了state1 => hook1, state2 => hook2, state3 => hook3这样的对应关系之后，下一次执行因为something条件没达成，导致useState(1)没有执行，那么运行useState(2)的时候，拿到的hook对象是state1的，那么整个逻辑就乱套了，所以这个条件是必须要遵守的！
+
 
 
 
