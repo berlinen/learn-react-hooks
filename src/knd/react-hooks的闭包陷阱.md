@@ -143,3 +143,17 @@ React.useEffect(() => {
 })
 ```
 
+看上去 updateLapse 使用的是直接外部的 running，所以不是 setInterval 回调保存的闭包来。但是可惜的是，这也是不行的。因为 updateLapse 也是 setInterval 闭包中的一部分，在这个闭包当中，running 永远都是一开始的值。
+
+可能看到这里大家会有点迷糊，主要就是对于闭包的层次的不太理解，这里我就专门提出来讲解一下。
+
+在这里我们的组件是一个函数组件，他是一个纯粹的函数，没有 this，同理也就没有 this.render 这样的在 ClassComponent 中特有的函数，所以每次我们渲染函数组件的时候，我们都是要执行这个方法的，在这里我们执行 Stopwatch。
+
+那么在开始执行的时候，我们就为 Stopwatch 创建来一个作用域，在这个作用域里面我们会声明方法，比如 updateLapse，他是在这次执行 Stopwatch 的时候才声明的，每一次执行 Stopwatch 的时候都会声明 updateLapse。同样的，lapse 和 running 也是每个作用域里单独声明的，**同一次声明的变量会出于同一个闭包，不同的声明在不同的闭包。**而 useEffect 只有在第一次渲染，或者后续 running 变化之后才会执行他的回调，所以对应的回调里面使用的闭包，也是每次执行的那次保存下来的
+
+这就导致了，在一个 useEffect 内部是无法获知 running 的变化的，这也是 useEffct 提供第二个参数的原因。
+
+那么是不是这里就无解了呢？明显不是的，这时候我们需要考虑使用 useReducer 来管理 state
+
+### 逃出闭包
+
